@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:live_straming/streams/better_player_with_default_pip.dart';
 import 'package:live_straming/streams/live_streaming_better_player.dart';
 import 'package:live_straming/streams/live_streaming_chewie.dart';
 import 'package:live_straming/streams/live_streaming_video_player.dart';
@@ -51,19 +52,21 @@ class HomeScreen extends StatelessWidget {
     const BetterPlayerExample(
       streamUrl:
           "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
-      isLive: true,
+      isLive: false,
     ),
     const YoutubePlayerStream(
       streamId: "_InqQJRqGW4",
     ),
+    const BetterPlayerDefaultPip(),
     // const YouTubePlayerExample(),
   ];
 
   final List<String> streamPlayerNames = [
     "Video Player",
     "Chewie Player",
-    "Better Player",
+    "Better Player With Custom Pip Mode",
     "Youtube Player IFrame",
+    "Better Player With Default Pip Mode",
     // "Youtube Player Flutter"
   ];
 

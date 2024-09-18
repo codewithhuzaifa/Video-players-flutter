@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:better_player/better_player.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // For platform channels
 
 class BetterPlayerExample extends StatefulWidget {
   final String streamUrl;
@@ -32,7 +32,6 @@ class _BetterPlayerExampleState extends State<BetterPlayerExample> {
         looping: true,
         aspectRatio: 16 / 9,
         controlsConfiguration: BetterPlayerControlsConfiguration(
-          enablePip: true,
           enableSkips: true,
         ),
       ),
@@ -40,6 +39,8 @@ class _BetterPlayerExampleState extends State<BetterPlayerExample> {
     );
     // Listen for PiP exit from platform side
     platform.setMethodCallHandler(_handlePlatformCall);
+    // Notify native side that the BetterPlayerExample screen is active
+    _notifyScreenActive(true);
   }
 
   // Handle platform method calls from native side
@@ -64,38 +65,48 @@ class _BetterPlayerExampleState extends State<BetterPlayerExample> {
         isPipDisable = false;
       });
     } on PlatformException catch (e) {
-      debugPrint("Failed to enter PiP mode: '${e.message}'");
+      print("Failed to enter PiP mode: '${e.message}'");
+    }
+  }
+
+  // Notify native side when the screen is active or not
+  Future<void> _notifyScreenActive(bool isActive) async {
+    try {
+      await platform.invokeMethod(isActive ? 'screenActive' : 'screenInactive');
+    } on PlatformException catch (e) {
+      print("Failed to notify screen state: '${e.message}'");
     }
   }
 
   @override
   void dispose() {
     _betterPlayerController?.dispose();
+    _notifyScreenActive(false); // Notify native side when screen is disposed
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: isPipDisable
-            ? AppBar(
-                title: const Text('Live Stream'),
-                actions: [
-                  // Button to manually enter PiP mode
-                  IconButton(
-                    tooltip: "Picture-In-Picture (PIP) Mode",
-                    icon: const Icon(Icons.picture_in_picture_alt),
-                    onPressed: _enterPiPMode,
-                  ),
-                ],
-              )
-            : null,
-        body: Column(
-          children: [
-            _betterPlayerController != null
-                ? BetterPlayer(controller: _betterPlayerController!)
-                : const CircularProgressIndicator(),
-          ],
-        ));
+      appBar: isPipDisable
+          ? AppBar(
+              title: const Text('Live Stream'),
+              actions: [
+                // Button to manually enter PiP mode
+                IconButton(
+                  icon: const Icon(Icons.picture_in_picture),
+                  onPressed: _enterPiPMode,
+                ),
+              ],
+            )
+          : null,
+      body: Column(
+        children: [
+          _betterPlayerController != null
+              ? BetterPlayer(controller: _betterPlayerController!)
+              : const CircularProgressIndicator(),
+        ],
+      ),
+    );
   }
 }

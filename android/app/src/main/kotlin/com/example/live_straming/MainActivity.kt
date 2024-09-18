@@ -11,43 +11,57 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.example.app/pip"
+    private var isBetterPlayerScreenActive = false // Track if BetterPlayer screen is active
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            if (call.method == "enterPiP") {
-                enterPiPMode()
-                result.success(null)
-            } else {
-                result.notImplemented()
+            when (call.method) {
+                "enterPiP" -> {
+                    if (isBetterPlayerScreenActive) {
+                        enterPiPMode()
+                        result.success(null)
+                    } else {
+                        result.error("PiP_ERROR", "PiP not allowed on this screen", null)
+                    }
+                }
+                "screenActive" -> {
+                    isBetterPlayerScreenActive = true
+                    result.success(null)
+                }
+                "screenInactive" -> {
+                    isBetterPlayerScreenActive = false
+                    result.success(null)
+                }
+                else -> result.notImplemented()
             }
         }
     }
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         // Automatically enter PiP mode when the app is minimized (backgrounded)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isBetterPlayerScreenActive) {
             enterPiPMode()
         }
     }
     override fun onStop() {
         super.onStop()
         // Enter PiP mode when the app is stopped (backgrounded or closed)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !isInPictureInPictureMode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !isInPictureInPictureMode && isBetterPlayerScreenActive) {
             enterPiPMode()
         }
     }
-private fun enterPiPMode() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val aspectRatio = Rational(16, 9)
-        val pipBuilder = PictureInPictureParams.Builder()
-        pipBuilder.setAspectRatio(aspectRatio)
-        enterPictureInPictureMode(pipBuilder.build())
-        // Notify Flutter to update the UI
-        flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
-            MethodChannel(messenger, CHANNEL).invokeMethod("onPiPEnter", null)
+    private fun enterPiPMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val aspectRatio = Rational(16, 9)
+            val pipBuilder = PictureInPictureParams.Builder()
+            pipBuilder.setAspectRatio(aspectRatio)
+            enterPictureInPictureMode(pipBuilder.build())
+            // Notify Flutter to update the UI
+            flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+                MethodChannel(messenger, CHANNEL).invokeMethod("onPiPEnter", null)
+            }
         }
     }
-}
     // Notify Flutter when PiP mode changes
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
