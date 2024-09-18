@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 
 class BetterPlayerExample extends StatefulWidget {
   final String streamUrl;
-  const BetterPlayerExample({required this.streamUrl, super.key});
+  final bool isLive;
+  const BetterPlayerExample(
+      {required this.streamUrl, super.key, required this.isLive});
   @override
   _BetterPlayerExampleState createState() => _BetterPlayerExampleState();
 }
@@ -22,7 +24,7 @@ class _BetterPlayerExampleState extends State<BetterPlayerExample> {
     BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.streamUrl,
-      liveStream: false,
+      liveStream: widget.isLive,
     );
     _betterPlayerController = BetterPlayerController(
       const BetterPlayerConfiguration(

@@ -5,7 +5,6 @@ import 'package:live_straming/streams/live_streaming_chewie.dart';
 import 'package:live_straming/streams/live_streaming_video_player.dart';
 import 'package:live_straming/streams/youtube_player.dart';
 
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
@@ -50,7 +49,10 @@ class HomeScreen extends StatelessWidget {
       streamUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
     ),
     const BetterPlayerExample(
-        streamUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"),
+      streamUrl:
+          "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+      isLive: true,
+    ),
     const YoutubePlayerStream(
       streamId: "_InqQJRqGW4",
     ),
